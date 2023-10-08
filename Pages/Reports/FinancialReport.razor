@@ -1,0 +1,136 @@
+﻿@page "/generate/financial-report"
+@using System.IO;
+@using FinReportBuilder.Helpers;
+@inject FinReportBuilder.Data.WordService service
+@inject FinReportBuilder.Data.FinancialReportService finReportService
+@inject Microsoft.JSInterop.IJSRuntime JS
+
+<h2 class="mb-3">Financial Report</h2>
+
+<p>
+    To get started, fill in the required fields, and then click on "Generate Report" to build the Word document. No data is stored in this system, and all data is transient.
+</p>
+<p>
+    To save your report for future reference, check the "Store Report" button.
+</p>
+
+@*<button class="btn btn-primary" @onclick="@(async () => await CreateWord(reportName: ReportName))">Create Word</button>*@
+
+<EditForm Model="@financialReportData" OnValidSubmit="GenerateReport">
+    <DataAnnotationsValidator />
+
+    <div class="form-group mb-3">
+        <label for="ClientName">Client Name:</label>
+        <InputText id="ClientName" @bind-Value="financialReportData.ClientName" class="form-control" />
+        <ValidationMessage For="@(() => financialReportData.ClientName)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="YearEndStatement">Year Ended Statement:</label>
+        <InputText id="YearEndedStatement" @bind-Value="financialReportData.YearEndedStatement" class="form-control" />
+        <ValidationMessage For="@(() => financialReportData.YearEndedStatement)" />
+    </div>
+
+    <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" @bind="financialReportData.HasABN" />
+        <label class="form-check-label" for="flexSwitchCheckDefault">Has ABN?</label>
+    </div>
+
+    @if (financialReportData.HasABN)
+    {
+        <div class="form-group mb-3">
+            <label for="ABN">ABN:</label>
+            <InputText id="ABN" @bind-Value="financialReportData.ABN" class="form-control" />
+            <ValidationMessage For="@(() => financialReportData.ABN)" />
+        </div>
+    }
+
+
+    @* NOTES TO THE FINANCIAL STATEMENT *@
+
+    @* Basis of Preparation *@
+    <div class="form-group mb-3">
+        <label for="BasisOfReport">Basis of Report Statement:</label>
+        <InputTextArea id="basisOfReport" @bind-Value="financialReportData.BasisOfReport" class="form-control" />
+        @if (string.IsNullOrWhiteSpace(financialReportData.BasisOfReport) || financialReportData.BasisOfReport.Length < 15)
+        {
+            <div class="text-danger">Basis of Report Statement must contain at least 15 characters.</div>
+        }
+    </div>
+
+    @* Plant, Property and Equipment *@
+    <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" @bind="financialReportData.HasPropertyPlantEquipment" />
+        <label class="form-check-label" for="flexSwitchCheckDefault">Add Property, Plant and Equipment?</label>
+    </div>
+
+    @if (financialReportData.HasPropertyPlantEquipment)
+    {
+        <div class="form-group mb-3">
+            <label for="PlantPropertyEquipment">Plant Property &amp; Equipment:</label>
+            <InputTextArea id="plantPropertyEquipment" @bind-Value="financialReportData.PropertyPlantEquipment" class="form-control" />
+            @if (string.IsNullOrWhiteSpace(financialReportData.PropertyPlantEquipment) || financialReportData.PropertyPlantEquipment.Length < 15)
+            {
+                <div class="text-danger">Property, Plant &amp; Equipment statement must contain at least 15 characters.</div>
+            }
+        </div>
+
+        @* Depreciation notice *@
+        <div class="form-group mb-3">
+            <label for="PropertyPlantEquipmentDepreciation">Plant Property &amp; Equipment Depreciation comment:</label>
+            <InputTextArea id="propertyPlantEquipmentDepreciation" @bind-Value="financialReportData.PropertyPlantEquipmentDepreciation" class="form-control" />
+            @if (string.IsNullOrWhiteSpace(financialReportData.PropertyPlantEquipmentDepreciation) || financialReportData.PropertyPlantEquipmentDepreciation.Length < 15)
+            {
+                <div class="text-danger">Property, Plant &amp; Equipment Depreciation statement must contain at least 15 characters.</div>
+            }
+        </div>
+    }
+
+    <button type="submit" class="btn btn-primary">Generate Report</button>
+</EditForm>
+
+
+@code {
+    MemoryStream documentStream = new();
+
+    private string ReportName = "FinancialReport";
+    private string formattedDate = string.Empty;
+
+    /// <summary>
+    /// Create and download the Word document
+    /// </summary>
+    protected async Task CreateWord(string reportName)
+    {
+        documentStream = service.CreateWord();
+        await JS.SaveAs($"{reportName}.docx", documentStream.ToArray());
+    }
+
+    private FinancialReportYearEnd financialReportData = new FinancialReportYearEnd();
+
+    private async void GenerateReport()
+    {
+        if (int.TryParse(financialReportData.YearEndedStatement, out int yearEndedPeriod))
+        {
+            DateTime lastDayOfJune = new DateTime(yearEndedPeriod, 6, DateTime.DaysInMonth(yearEndedPeriod, 6));
+            formattedDate = lastDayOfJune.ToString("dd MMMM, yyyy");
+        }
+        else
+        {
+            // Handle the case where parsing 'YearEndedStatement' to an int failed
+        }
+
+
+        documentStream = finReportService
+            .CreateFinancialReportForYearEnded(
+                clientName: financialReportData.ClientName,
+                hasAbn: financialReportData.HasABN,
+                abnNumber: financialReportData.ABN,
+                yearEndingStatement: formattedDate,
+                basisOfPreparationText: financialReportData.BasisOfReport,
+                hasPlantPropertyEquipment: financialReportData.HasPropertyPlantEquipment,
+                plantPropertyEquipmentText: financialReportData.PropertyPlantEquipment,
+                plantPropertyEquipmentDepreciationText: financialReportData.PropertyPlantEquipmentDepreciation
+            );
+        await JS.SaveAs($"{ReportName}.docx", documentStream.ToArray());
+    }
+}
