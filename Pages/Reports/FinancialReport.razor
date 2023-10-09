@@ -57,10 +57,14 @@
     @* Basis of Preparation *@
     <div class="form-group mb-3">
         <label for="BasisOfReport">Basis of Report Statement:</label>
-        <InputTextArea id="basisOfReport" @bind-Value="financialReportData.BasisOfReport" class="form-control" />
+        <InputTextArea id="basisOfReport" @bind-Value="financialReportData.BasisOfReport" class="form-control" style="height: 150px;" />
         @if (string.IsNullOrWhiteSpace(financialReportData.BasisOfReport) || financialReportData.BasisOfReport.Length < 15)
         {
             <div class="text-danger">Basis of Report Statement must contain at least 15 characters.</div>
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" @onclick="TogglePropertyPopulateBasisOfReport" />
+                <label class="form-check-label" for="flexSwitchCheckDefault">Pre-Fill Basis of Report Statement</label>
+            </div>
         }
     </div>
 
@@ -101,6 +105,7 @@
 
     private string ReportName = "FinancialReport";
     private string formattedDate = string.Empty;
+    private bool isPropertyBasisOfReportDefaultChecked = false;
 
     /// <summary>
     /// Create and download the Word document
@@ -140,4 +145,25 @@
             );
         await JS.SaveAs($"{ReportName}.docx", documentStream.ToArray());
     }
+
+    private void TogglePropertyPopulateBasisOfReport()
+    {
+        if (isPropertyBasisOfReportDefaultChecked)
+        {
+            financialReportData.BasisOfReport = string.Empty; // Clear the text
+        }
+        else
+        {
+            financialReportData.BasisOfReport = "The Company is non reporting since there are unlikely to be any users who would rely on the general purpose financial statements.\n" +
+                "The special purpose financial statements have been prepared in accordance with the significant accounting policies described below and do not comply with any Australian " +
+                "Accounting Standards unless otherwise stated.\nThe financial statements have been prepared on an accruals basis and are based on historical costs modified, where " +
+                "applicable, by the measurement at fair value of selected non current assets, financial assets and financial liabilities.\nSignificant accounting policies adopted " +
+                "in the preparation of these financial statements are presented below and are consistent with prior reporting periods unless otherwise stated.";
+        }
+
+        isPropertyBasisOfReportDefaultChecked = !isPropertyBasisOfReportDefaultChecked; // Toggle checkbox state
+
+
+    }
+
 }
