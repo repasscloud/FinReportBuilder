@@ -30,7 +30,8 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
-    <script type="text/javascript">function saveAsFile(filename, bytesBase64) {
+    <script src="js/fileSaver.js"></script>
+    @* <script type="text/javascript">function saveAsFile(filename, bytesBase64) {
             if (navigator.msSaveBlob) {
                 //Download document in Edge browser
                 var data = window.atob(bytesBase64);
@@ -49,7 +50,7 @@
                 link.click();
                 document.body.removeChild(link);
             }
-        }</script>
+        }</script> *@
 </body>
 </html>
 

@@ -4,6 +4,11 @@ namespace FinReportBuilder.Models.Reports
 {
 	public class FinancialReportYearEnd
 	{
+        [Key]
+        public int Id { get; set; }
+
+        public Guid CustomerId { get; set; } = new();
+
         // report name
         public string ReportName { get; } = "FINANCIAL REPORT\nFOR THE YEAR ENDED";
 
@@ -18,6 +23,9 @@ namespace FinReportBuilder.Models.Reports
 
         [RegularExpression(@"^.{2,}$", ErrorMessage = "Client name must be minimum 2 characters.")]
         public string ClientName { get; set; } = null!;
+
+        [RegularExpression(@"^.{2,}$", ErrorMessage = "Director's name must be minimum 2 characters.")]
+        public string DirectorsName { get; set; } = null!;
 
         // client has ABN?
         public bool HasABN { get; set; } = false;

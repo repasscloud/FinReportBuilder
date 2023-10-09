@@ -26,6 +26,12 @@
     </div>
 
     <div class="form-group mb-3">
+        <label for="DirectorsName">Director's Name:</label>
+        <InputText id="DirectorsName" @bind-Value="financialReportData.DirectorsName" class="form-control" />
+        <ValidationMessage For="@(() => financialReportData.DirectorsName)" />
+    </div>
+
+    <div class="form-group mb-3">
         <label for="YearEndStatement">Year Ended Statement:</label>
         <InputText id="YearEndedStatement" @bind-Value="financialReportData.YearEndedStatement" class="form-control" />
         <ValidationMessage For="@(() => financialReportData.YearEndedStatement)" />
@@ -123,6 +129,7 @@
         documentStream = finReportService
             .CreateFinancialReportForYearEnded(
                 clientName: financialReportData.ClientName,
+                directorsName: financialReportData.DirectorsName,
                 hasAbn: financialReportData.HasABN,
                 abnNumber: financialReportData.ABN,
                 yearEndingStatement: formattedDate,

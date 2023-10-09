@@ -8,6 +8,7 @@ namespace FinReportBuilder.Data
 	{
         public MemoryStream CreateFinancialReportForYearEnded(
             string clientName,
+            string directorsName,
             string yearEndingStatement,
             string basisOfPreparationText,
             bool hasPlantPropertyEquipment,
@@ -85,7 +86,6 @@ namespace FinReportBuilder.Data
                 paragraph1.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Center;
 
                 // append liability statement
-                paragraph1.AppendBreak(BreakType.LineBreak);
                 paragraph1.AppendText("Liability limited by a scheme approved under");
                 paragraph1.AppendBreak(BreakType.LineBreak);
                 paragraph1.AppendText("Professional Standards Legislation");
@@ -109,6 +109,7 @@ namespace FinReportBuilder.Data
                 page5TextStyle.CharacterFormat.FontSize = 10f;
                 page5TextStyle.CharacterFormat.Bold = false;
 
+                // page break
                 IWParagraph pageBreakPara = section.AddParagraph();
                 pageBreakPara.AppendBreak(BreakType.PageBreak);
 
@@ -211,7 +212,71 @@ namespace FinReportBuilder.Data
                     page5Text8.ApplyStyle("Page5Text_Style3");
                     page5Text8.AppendText(plantPropertyEquipmentDepreciationText);
                 }
+
+                // DIRECTOR's DECLARATION
                 
+                // page break
+                IWParagraph pageBreakPara1 = section.AddParagraph();
+                pageBreakPara1.AppendBreak(BreakType.PageBreak);
+
+                IWParagraph directorsDeclarationHeading = section.AddParagraph();
+                directorsDeclarationHeading.ApplyStyle("Page5_Style");
+                directorsDeclarationHeading.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Center;
+                directorsDeclarationHeading.AppendText($"{clientName.ToUpperInvariant()}");
+                if (hasAbn)
+                {
+                    directorsDeclarationHeading.AppendText("\n");
+                    directorsDeclarationHeading.AppendText($"ABN {formattedAbnNumber}");
+                }
+                directorsDeclarationHeading.AppendText("\n");
+                directorsDeclarationHeading.AppendText("DIRECTOR'S DECLARATION");
+
+                Shape line2 = directorsDeclarationHeading.AppendShape(AutoShapeType.Line, 100, 1);
+                line2.VerticalPosition = 230;
+                line2.HorizontalPosition = 150;
+                
+
+                IWParagraph directorsDeclarationHeadingText = section.AddParagraph();
+                directorsDeclarationHeadingText.ApplyStyle("Page5Text_Style");
+                directorsDeclarationHeadingText.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Left;
+                directorsDeclarationHeadingText.AppendText($"The director of the company declares that:");
+
+                IWParagraph directorsDeclarationPoint1 = section.AddParagraph();
+                directorsDeclarationPoint1.ApplyStyle("Page5Text_Style3");
+                directorsDeclarationPoint1.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Left;
+                directorsDeclarationPoint1.AppendText($"1.\tThe financial statements and notes, as set out on pages 1 to 5, for the year ended {yearEndingStatement.ToUpperInvariant()} are in accordance with the Corporations Act 2011 and:");
+
+                IWParagraph directorsDeclarationPoint2 = section.AddParagraph();
+                directorsDeclarationPoint2.ApplyStyle("Page5Text_Style3");
+                directorsDeclarationPoint2.AppendText("(a)\tcomply with Accounting Standards, which, as stated in accounting policy Note 1 to the financial statements, constitutes explicit and unreserved compliance with international Financial Reporting Standards (IFRS); and");
+
+                IWParagraph directorsDeclarationPoint3 = section.AddParagraph();
+                directorsDeclarationPoint3.ApplyStyle("Page5Text_Style3");
+                directorsDeclarationPoint3.AppendText("(b)\tgive a true and fair view of the financial position and performance of the company.");
+
+                IWParagraph directorsDeclarationPoint4 = section.AddParagraph();
+                directorsDeclarationPoint4.ApplyStyle("Page5Text_Style3");
+                directorsDeclarationPoint4.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Left;
+                directorsDeclarationPoint4.AppendText($"2.\tIn the director's opinion, there are reasonable grounds to believe that the company will be able to pay its debts as and when they become due and payable.");
+
+                IWParagraph directorsDeclarationPoint5 = section.AddParagraph();
+                directorsDeclarationPoint5.ApplyStyle("Page5Text_Style");
+                directorsDeclarationPoint5.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Left;
+                directorsDeclarationPoint5.AppendText($"This declaration is made in accordance with a resolution of the director.");
+
+                IWParagraph directorsDeclarationPoint6 = section.AddParagraph();
+                directorsDeclarationPoint6.ApplyStyle("Page5Text_Style");
+                directorsDeclarationPoint6.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Left;
+                directorsDeclarationPoint6.AppendText($"\nDirector:\t____________________________\n");
+                directorsDeclarationPoint6.AppendText($"{directorsName}");
+
+                IWParagraph directorsDeclarationPoint7 = section.AddParagraph();
+                directorsDeclarationPoint7.ApplyStyle("Page5Text_Style");
+                directorsDeclarationPoint7.ParagraphFormat.HorizontalAlignment = HorizontalAlignment.Left;
+                directorsDeclarationPoint7.AppendText($"Dated this {DateTime.Today.ToString("d")}");
+
+
+                directorsDeclarationPoint7.AppendText($"{directorsName}");
 
                 // Saves the Word document to MemoryStream.
                 MemoryStream stream = new MemoryStream();
